@@ -1,0 +1,11 @@
+Linear Regression Baseline all original features (without feat_eng)
+Train R² score: 0.352196110327724
+Test R² score: 0.3923934272602472
+----------------------------------------------------------------------------
+Linear Regression Baseline all original features (with long+lat, price outliers removed - zscore (3))
+Train R² score: 0.47125257231843376
+Test R² score: 0.4675137930827562
+----------------------------------------------------------------------------
+Linear Regression Baseline all original features (with long+lat, numerical outliers removed - zscore (3))
+Train R² score: 0.4637182194970946
+Test R² score: 0.4575969366047734

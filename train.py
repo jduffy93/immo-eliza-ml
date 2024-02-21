@@ -10,12 +10,17 @@ from sklearn.preprocessing import OneHotEncoder
 def train():
     """Trains a linear regression model on the full dataset and stores output."""
     # Load the data
-    data = pd.read_csv("data/properties.csv")
+    data = pd.read_csv("data/input.csv")
 
     # Define features to use
-    num_features = ["nbr_frontages"]
-    fl_features = ["fl_terrace"]
-    cat_features = ["equipped_kitchen"]
+    num_features = ["latitude", "longitude", "construction_year", "total_area_sqm",
+                    "surface_land_sqm", "nbr_frontages", "nbr_bedrooms",
+                    "terrace_sqm", "garden_sqm", "primary_energy_consumption_sqm",
+                    "cadastral_income"]
+    fl_features = ["fl_furnished", "fl_open_fire", "fl_terrace", "fl_garden",
+                   "fl_swimming_pool", "fl_floodzone", "fl_double_glazing"]
+    cat_features = ["property_type", "subproperty_type", "region", "province",
+                    "locality", "equipped_kitchen", "state_building", "epc", "heating_type"]
 
     # Split the data into features and target
     X = data[num_features + fl_features + cat_features]
