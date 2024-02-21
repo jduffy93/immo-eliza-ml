@@ -3,60 +3,48 @@ import pandas as pd
 from scipy.stats import zscore
  
 
+class Feature_engineering():
 
-def f_engineering():
-    """Carries out ."""
-    # Load the data
-    df = pd.read_csv("data/properties.csv")
+    def __init__(self):
+        pass
 
-    #--------------------------------------------------------------
-    # Preprocessing
-    #--------------------------------------------------------------
-    
-    # Filling in missing longitude and latitude values with the average value for that locality
-    for locality in df.locality.unique():
-        mean_lat = round(df[df['locality'] == locality].latitude.mean(), 6)
-        mean_long = round(df[df['locality'] == locality].longitude.mean(), 6)
+    def f_engineering(self):
+        """Carries out ."""
+        # Load the data
+        df = pd.read_csv("data/properties.csv")
 
-        #print(f'{locality}\n  mean latitude: {mean_lat}\n  mean longitude: {mean_long}')
+        #--------------------------------------------------------------
+        # Preprocessing
+        #--------------------------------------------------------------
         
-        # Condition
-        cond = df['locality'] == locality
+        # Filling in missing longitude and latitude values with the average value for that locality
+        for locality in df.locality.unique():
+            mean_lat = round(df[df['locality'] == locality].latitude.mean(), 6)
+            mean_long = round(df[df['locality'] == locality].longitude.mean(), 6)
 
-        # Replacing the empt values with means
-        df.loc[cond,'latitude'] = df.loc[cond,'latitude'].fillna(mean_lat)
-        df.loc[cond,'longitude'] = df.loc[cond,'longitude'].fillna(mean_long)
-    
-    df = df.drop(df[df['subproperty_type'] == "CASTLE"].index)
+            #print(f'{locality}\n  mean latitude: {mean_lat}\n  mean longitude: {mean_long}')
+            
+            # Condition
+            cond = df['locality'] == locality
 
-    # Removing outliers from numerical columns based on the interquartile range
-    '''
-    z = np.abs(zscore(df['price']))
+            # Replacing the empt values with means
+            df.loc[cond,'latitude'] = df.loc[cond,'latitude'].fillna(mean_lat)
+            df.loc[cond,'longitude'] = df.loc[cond,'longitude'].fillna(mean_long)
+        
+        df.drop(df[df['subproperty_type'] == "CASTLE"].index)
 
-    # Identify outliers as students with a z-score greater than 3
-    threshold = 3
-    outliers = df[z > threshold]
+        # Removing outliers from numerical columns based on the z-score
+        
+        for column in df.select_dtypes(include=["float64"]).columns:
+            z = np.abs(zscore(df[column]))
 
-    # Print the outliers
-    df = df.drop(outliers.index)
+            # Identify outliers with a z-score greater than 3
+            threshold = 3
+            outliers = df[z > threshold]
 
-    '''
-
-    for column in df.select_dtypes(include=["float64"]).columns:
-        # Calculate the z-score for each student's height
-        z = np.abs(zscore(df[column]))
-
-        # Identify outliers as students with a z-score greater than 3
-        threshold = 3
-        outliers = df[z > threshold]
-
-
-        df = df.drop(outliers.index)
-
-    #--------------------------------------------------------------
-    # Output
-    #--------------------------------------------------------------
-    df.to_csv("data/input.csv", index=False)
-
-if __name__ == "__main__":
-    f_engineering()
+            df = df.drop(outliers.index) # Drop outliers
+        
+        #--------------------------------------------------------------
+        # Output
+        #--------------------------------------------------------------
+        df.to_csv("data/input.csv", index=False)

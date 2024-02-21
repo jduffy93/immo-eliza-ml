@@ -6,9 +6,15 @@ from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
+from feature_engineering import Feature_engineering 
+
 
 def train():
     """Trains a linear regression model on the full dataset and stores output."""
+    f_engineering = Feature_engineering()
+    f_engineering.f_engineering()
+
+
     # Load the data
     data = pd.read_csv("data/input.csv")
 
