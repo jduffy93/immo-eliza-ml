@@ -1,6 +1,7 @@
 import click
 import joblib
 import pandas as pd
+import numpy as np
 
 
 @click.command()
@@ -16,39 +17,48 @@ def predict(input_dataset, output_dataset):
     """Predicts house prices from 'input_dataset', stores it to 'output_dataset'."""
     ### -------- DO NOT TOUCH THE FOLLOWING LINES -------- ###
     # Load the data
-    data = pd.read_csv(input_dataset)
+    input_data = pd.read_csv(input_dataset)
     ### -------------------------------------------------- ###
 
+    list_predictions = []
+
     # Load the model artifacts using joblib
-    artifacts = joblib.load("models/artifacts.joblib")
+    artifacts_mult = joblib.load("models/artifacts.joblib")
 
-    # Unpack the artifacts
-    num_features = artifacts["features"]["num_features"]
-    fl_features = artifacts["features"]["fl_features"]
-    cat_features = artifacts["features"]["cat_features"]
-    imputer = artifacts["imputer"]
-    enc = artifacts["enc"]
-    model = artifacts["model"]
+    for key in artifacts_mult:
+        data = input_data.copy()
+        artifacts = artifacts_mult[key]
 
-    # Extract the used data
-    data = data[num_features + fl_features + cat_features]
+        # Unpack the artifacts
+        num_features = artifacts["features"]["num_features"]
+        fl_features = artifacts["features"]["fl_features"]
+        cat_features = artifacts["features"]["cat_features"]
+        imputer = artifacts["imputer"]
+        enc = artifacts["enc"]
+        model = artifacts["model"]
 
-    # Apply imputer and encoder on data
-    data[num_features] = imputer.transform(data[num_features])
-    data_cat = enc.transform(data[cat_features]).toarray()
 
-    # Combine the numerical and one-hot encoded categorical columns
-    data = pd.concat(
-        [
-            data[num_features + fl_features].reset_index(drop=True),
-            pd.DataFrame(data_cat, columns=enc.get_feature_names_out()),
-        ],
-        axis=1,
-    )
+        # Extract the used data
+        data = data[num_features + fl_features + cat_features]
 
-    # Make predictions
-    predictions = model.predict(data)
-    #predictions = predictions[:10]  # just picking 10 to display sample output :-)
+        # Apply imputer and encoder on data
+        data[num_features] = imputer.transform(data[num_features])
+        data_cat = enc.transform(data[cat_features]).toarray()
+
+        # Combine the numerical and one-hot encoded categorical columns
+        data = pd.concat(
+            [
+                data[num_features + fl_features].reset_index(drop=True),
+                pd.DataFrame(data_cat, columns=enc.get_feature_names_out()),
+            ],
+            axis=1,
+        )
+
+        # Make predictions
+        list_predictions.append(model.predict(data))
+        print(type(list_predictions), list_predictions)
+    
+    predictions = np.append(list_predictions[0], list_predictions[1])
 
     ### -------- DO NOT TOUCH THE FOLLOWING LINES -------- ###
     # Save the predictions to a CSV file (in order of data input!)
