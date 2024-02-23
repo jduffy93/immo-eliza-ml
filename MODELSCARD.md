@@ -105,13 +105,12 @@ Run `train_xgboost.py` to train the model and generate artifacts:
 python train_xgboost.py
 ```
 
-Run `predict.py` to generate predictions:
+To generate predictions, run:
 
 ```cmd
-python train_xgboost.py
+python .\predict.py -i "data\input.csv" -o "output\predictions.csv"
 ```
 
-What are the dependencies, what scripts are there to train the model, how to generate predictions, ...
 
 ## Maintainers
 
