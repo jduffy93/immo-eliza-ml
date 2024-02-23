@@ -4,8 +4,8 @@ import numpy as np
 import scipy.stats as stats
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score#
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.metrics import r2_score
+#from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 #from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import OneHotEncoder
@@ -15,7 +15,7 @@ from xgboost import XGBRegressor
 #from feature_engineering import Feature_engineering 
 
 
-def train(random_state):
+def train():
     """Trains a linear regression model on the full dataset and stores output."""
     #f_engineering = Feature_engineering()
     #f_engineering.f_engineering()
@@ -41,7 +41,7 @@ def train(random_state):
 
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.20, random_state=random_state
+        X, y, test_size=0.20, random_state=505
     )
 
     # Impute missing values using SimpleImputer
@@ -74,28 +74,26 @@ def train(random_state):
     )
 
 
-
     # Train base model
     bst = XGBRegressor()
     bst.fit(X_train, y_train)
+
+    # Evaluate base model
+    train_score = r2_score(y_train, bst.predict(X_train))
+    test_score = r2_score(y_test, bst.predict(X_test))
+    #print(f"Train R² score {type}: {train_score}")
+    #print(f"Test R² score {type}: {test_score}")
 
     # Train model with tuned hyper-parameters
     xgb1 = XGBRegressor(colsample_bytree= 0.7, learning_rate= 0.05, max_depth= 7, min_child_weight= 4, n_estimators= 500, nthread= 4, objective='reg:squarederror', subsample= 0.7)
     xgb1.fit(X_train,y_train)
 
-
+    # Evaluate model with hyper-parameters
     xgb1_train_score = r2_score(y_train, xgb1.predict(X_train))
     xgb1_test_score = r2_score(y_test, xgb1.predict(X_test))
     print(f"Train R² score {type}: {xgb1_train_score}")
     print(f"Test R² score {type}: {xgb1_test_score}")
-    print('==========================================================================')
 
-
-    # Evaluate the model
-    train_score = r2_score(y_train, bst.predict(X_train))
-    test_score = r2_score(y_test, bst.predict(X_test))
-    #print(f"Train R² score {type}: {train_score}")
-    #print(f"Test R² score {type}: {test_score}")
 
     # Save the model
     artifacts = {
@@ -114,10 +112,6 @@ def train(random_state):
 
 
 if __name__ == "__main__":
-    list_score = []
-    for i in range(200):
-        #train(i)
-        list_score.append(train(i))
+    train()
         
-    print('Number of iterations:',len(list_score),'\nAverage Test R2 score:',np.average(list_score))
 
