@@ -21,12 +21,18 @@ def predict(input_dataset, output_dataset):
     ### -------------------------------------------------- ###
 
     list_predictions = []
+    list_index = []
 
     # Load the model artifacts using joblib
     artifacts_mult = joblib.load("models/artifacts.joblib")
 
     for key in artifacts_mult:
+        #print(type(key),key)
         data = input_data.copy()
+        list_index.extend(data[data["property_type"] == key].index)
+        #print(list_index[:5], list_index[-5:])
+        data = data[data["property_type"] == key]
+
         artifacts = artifacts_mult[key]
 
         # Unpack the artifacts
@@ -56,9 +62,16 @@ def predict(input_dataset, output_dataset):
 
         # Make predictions
         list_predictions.append(model.predict(data))
-        print(type(list_predictions), list_predictions)
     
     predictions = np.append(list_predictions[0], list_predictions[1])
+    # Make predictions a df, add in the indices, sort, and then turn predictions into a narray
+    df = pd.DataFrame(predictions, columns=['predictions'])
+
+    df["indices"] = list_index
+    df = df.sort_values(by=['indices'])
+    predictions = df["predictions"].to_numpy()
+
+    print('\n',df.columns, df.head(), '\n')
 
     ### -------- DO NOT TOUCH THE FOLLOWING LINES -------- ###
     # Save the predictions to a CSV file (in order of data input!)
@@ -68,7 +81,7 @@ def predict(input_dataset, output_dataset):
     click.echo(click.style("Predictions generated successfully!", fg="green"))
     click.echo(f"Saved to {output_dataset}")
     click.echo(
-        f"Nbr. observations: {data.shape[0]} | Nbr. predictions: {predictions.shape[0]}"
+        f"Nbr. observations: {input_data.shape[0]} | Nbr. predictions: {predictions.shape[0]}"
     )
     ### -------------------------------------------------- ###
 
