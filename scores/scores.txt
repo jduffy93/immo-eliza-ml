@@ -9,3 +9,10 @@ Test R² score: 0.4675137930827562
 Linear Regression Baseline all original features (with long+lat, numerical outliers removed - zscore (3))
 Train R² score: 0.4637182194970946
 Test R² score: 0.4575969366047734
+----------------------------------------------------------------------------
+Linear Regression
+Train R² score HOUSE: 0.5251608947622262
+Test R² score HOUSE: 0.5109048565886796
+Train R² score APARTMENT: 0.42652258468206516
+Test R² score APARTMENT: 0.4273016147640225
+----------------------------------------------------------------------------
