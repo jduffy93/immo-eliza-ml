@@ -5,15 +5,14 @@ import scipy.stats as stats
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-from sklearn.ensemble import GradientBoostingClassifier
+#from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import GridSearchCV
+#from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import LabelEncoder
 
 from xgboost import XGBRegressor
 
-from feature_engineering import Feature_engineering 
+#from feature_engineering import Feature_engineering 
 
 
 def train():
@@ -75,37 +74,26 @@ def train():
     )
 
 
-    '''
-    param_test1 = {'n_estimators':range(100, 1200, 100), 'learning_rate':[0.01, 0.1, 1]}
-    gbm_tune1 = GradientBoostingClassifier(max_features='sqrt', min_samples_leaf=0.001, max_depth=4)
-
-    gs1 = GridSearchCV(estimator=gbm_tune1, param_grid=param_test1, scoring='roc_auc', n_jobs=6, cv=5)
-    gs1.fit(X_train, np.ravel(y_train))
-
-    print(f"The best parameters: {gs1.best_params_}, and the highest mean_test_score is {gs1.best_score_}")
-    '''
-
-    # Train the model
+    # Train base model
     bst = XGBRegressor()
     bst.fit(X_train, y_train)
 
-    # Various hyper-parameters to tune
+    # Evaluate base model
+    train_score = r2_score(y_train, bst.predict(X_train))
+    test_score = r2_score(y_test, bst.predict(X_test))
+    #print(f"Train R² score {type}: {train_score}")
+    #print(f"Test R² score {type}: {test_score}")
+
+    # Train model with tuned hyper-parameters
     xgb1 = XGBRegressor(colsample_bytree= 0.7, learning_rate= 0.05, max_depth= 7, min_child_weight= 4, n_estimators= 500, nthread= 4, objective='reg:squarederror', subsample= 0.7)
     xgb1.fit(X_train,y_train)
 
-
+    # Evaluate model with hyper-parameters
     xgb1_train_score = r2_score(y_train, xgb1.predict(X_train))
     xgb1_test_score = r2_score(y_test, xgb1.predict(X_test))
     print(f"Train R² score {type}: {xgb1_train_score}")
     print(f"Test R² score {type}: {xgb1_test_score}")
-    print('==========================================================================')
 
-
-    # Evaluate the model
-    train_score = r2_score(y_train, bst.predict(X_train))
-    test_score = r2_score(y_test, bst.predict(X_test))
-    print(f"Train R² score {type}: {train_score}")
-    print(f"Test R² score {type}: {test_score}")
 
     # Save the model
     artifacts = {
@@ -120,6 +108,10 @@ def train():
     }
     joblib.dump(artifacts, "models/artifacts_xgboost.joblib")
 
+    return xgb1_test_score
+
 
 if __name__ == "__main__":
     train()
+        
+
