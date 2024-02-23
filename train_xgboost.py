@@ -1,9 +1,13 @@
 import joblib
 import pandas as pd
+import numpy as np
+import scipy.stats as stats
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelEncoder
 
@@ -19,16 +23,16 @@ def train():
 
 
     # Load the data
-    data = pd.read_csv("data/input.csv")
-    artifacts = {}
+    data = pd.read_csv("data/properties.csv")
+
     # Define features to use
     num_features = ["latitude", "longitude", "construction_year", "total_area_sqm",
                     "nbr_frontages", "nbr_bedrooms",
                     "terrace_sqm", "garden_sqm", "primary_energy_consumption_sqm",
                     "cadastral_income"]
-    fl_features = ["fl_furnished", "fl_open_fire", "fl_terrace", "fl_garden",
+    fl_features = ["fl_furnished", "fl_terrace", "fl_garden",
                    "fl_swimming_pool", "fl_floodzone", "fl_double_glazing"]
-    cat_features = ["property_type", "subproperty_type", "region",
+    cat_features = ["property_type","subproperty_type", "region",
                     "locality", "state_building", "heating_type",
                     "epc"]
 
@@ -38,7 +42,7 @@ def train():
 
     # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.20, random_state=44
+        X, y, test_size=0.20, random_state=505
     )
 
     # Impute missing values using SimpleImputer
@@ -71,9 +75,31 @@ def train():
     )
 
 
+    '''
+    param_test1 = {'n_estimators':range(100, 1200, 100), 'learning_rate':[0.01, 0.1, 1]}
+    gbm_tune1 = GradientBoostingClassifier(max_features='sqrt', min_samples_leaf=0.001, max_depth=4)
+
+    gs1 = GridSearchCV(estimator=gbm_tune1, param_grid=param_test1, scoring='roc_auc', n_jobs=6, cv=5)
+    gs1.fit(X_train, np.ravel(y_train))
+
+    print(f"The best parameters: {gs1.best_params_}, and the highest mean_test_score is {gs1.best_score_}")
+    '''
+
     # Train the model
     bst = XGBRegressor()
     bst.fit(X_train, y_train)
+
+    # Various hyper-parameters to tune
+    xgb1 = XGBRegressor(colsample_bytree= 0.7, learning_rate= 0.05, max_depth= 7, min_child_weight= 4, n_estimators= 500, nthread= 4, objective='reg:squarederror', subsample= 0.7)
+    xgb1.fit(X_train,y_train)
+
+
+    xgb1_train_score = r2_score(y_train, xgb1.predict(X_train))
+    xgb1_test_score = r2_score(y_test, xgb1.predict(X_test))
+    print(f"Train R² score {type}: {xgb1_train_score}")
+    print(f"Test R² score {type}: {xgb1_test_score}")
+    print('==========================================================================')
+
 
     # Evaluate the model
     train_score = r2_score(y_train, bst.predict(X_train))
@@ -90,7 +116,7 @@ def train():
         },
         "imputer": imputer,
         "enc": enc,
-        "model": bst,
+        "model": xgb1,
     }
     joblib.dump(artifacts, "models/artifacts_xgboost.joblib")
 
