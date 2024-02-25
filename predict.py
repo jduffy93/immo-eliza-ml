@@ -20,6 +20,7 @@ def predict(input_dataset, output_dataset):
     data = pd.read_csv(input_dataset)
     ### -------------------------------------------------- ###
 
+    data = data.round({'latitude': 4, 'longitude': 4})
 
     # Load the model artifacts using joblib
     artifacts = joblib.load("models/artifacts_xgboost.joblib")
